@@ -6,14 +6,16 @@ const express = require("express"),
       passportLocal = require('passport-local'),
       passportLocalMongoose = require('passport-local-mongoose'),
       User = require('./models/user');
-      Sky =require('./models/user');
+      Sky =require('./models/user'),
+      skyRoutes = require('./routes/sky');
+      indexRoutes = require('./routes/index');
 
 const app = express();
 
 mongoose.connect('mongodb://localhost:27017/collection', {useNewUrlParser: true,useUnifiedTopology: true});
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended : true}));
-app.set("view engine", "ejs");
+app.set("view engine", "ejs"); 
 
 app.use(require('express-session')({
     secret: 'CSS227',
@@ -32,6 +34,13 @@ passport.use(new passportLocal(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+
+app.use('/', indexRoutes);
+app.use('/sky', skyRoutes);
+
+app.listen(3000, function(req,res){
+    console.log("My collection is ready!");
+});
 
 //  Sky.create(
 //      {
@@ -87,95 +96,3 @@ passport.deserializeUser(User.deserializeUser());
 //     image:"https://img.fotocommunity.com/graeser-bei-sonnenuntergang-65a1c5ab-2205-45c8-8762-394992892610.jpg?height=1080",
 //     desc:"ดาว 12 ดวง"}
 // ];
-
-app.get("/", function(req,res){
-    res.render("landing");
-});
-
-app.get("/sky",isLoggedIn, function(req,res){
-    Sky.find({},function(error,allSky){
-        if(error){
-            console.log("Error");
-        }else {
-            console.log(allSky);
-            res.render("collection",{Sky: allSky});
-        }
-    })
-    
-});
-
-app.post("/new",isLoggedIn, function(req,res){
-    let n_name = req.body.name;
-    let n_image = req.body.image;
-    let n_desc = req.body.desc;
-    let n_sky = {name:n_name,image:n_image,desc:n_desc};
-    Sky.create(n_sky, function(error,newSky){
-        if(error){
-            console.log("error");
-
-        }else{
-            console.log("New sky added.");
-            res.redirect("/index");
-        }
-    });
-   
-});
-
-app.get("/sky/new",isLoggedIn, function(req,res){
-    res.render("addnewsky");
-});
-
-app.get("/sky/:id",isLoggedIn, async function(req,res)
-{
-    const { id } = req.params;
-    const product = await Sky.findById(id);
-    console.log(product);
-    res.render("showdetails",{ Sky : product});
-});
-
-/*--*/
-
-app.get('/login', function(req,res){
-    res.render('login');
-});
-
-
-
-app.post('/login', passport.authenticate('local', {
-    successRedirect: '/sky',
-    failureRedirect: '/login'
-}), function(req, res){
-});
-
-app.get('/logout', function(req,res){
-    req.logout();
-    res.redirect('/');
-});
-
-app.get('/signup', function(req,res){
-    res.render('signup');
-});
-
-app.post('/signup', function(req,res){
-    User.register(new User({username: req.body.username}), req.body.password , function(err, user){
-        if(err){
-            console.log(err);
-            return res.render('signup');
-
-        }
-        passport.authenticate('local')(req,res,function(){
-            res.redirect('/sky');
-        });
-    });
-});
-
-function isLoggedIn(req, res, next){
-    if(req.isAuthenticated()){
-        return next();
-    }
-    res.redirect('/login');
-}
-
-app.listen(3000, function(req,res){
-    console.log("My collection is ready!");
-});
