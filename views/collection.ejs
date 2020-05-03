@@ -1,0 +1,26 @@
+<%- include("partials/header") %>
+<div class ="container">
+    <header class = "jumbotron">
+        <div class ="container">
+            <center>
+                <h1>  -My gallery- </h1>
+                <a class="btn btn-outline-primary" href="/sky/new" role="button">Add new sky</a>
+            </center>
+        </div>
+    </header>
+
+    <div class ="row" style="display: flex;flex-wrap: wrap;">
+        <% Sky.forEach(function(s){ %>
+            <div class ="col-md-3 col-sm-6">
+                <div class="img-thumbnail">
+                    <img src = "<%= s.image %>" class="img-fluid" width ="250px" >
+                    <p style="text-align: center;"> <%= s.name %> </p>
+                    <a class="btn btn-outline-primary" href="/sky/<%= s._id %>" role="button">More detail...</a>
+                    <!-- <p style="text-align: center;"> <%= s.desc %> </p> -->
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+
+<%- include("partials/footer") %>
